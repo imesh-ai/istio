@@ -419,6 +419,10 @@ func (cb *ClusterBuilder) buildConnectOriginate(proxy *model.Proxy, push *model.
 		c.ConnectTimeout = durationpb.New(time.Duration(features.ConnectOriginateOverrideConnectTimeout) * time.Second)
 	}
 
+	if features.ConnectOriginateOverrideCleanupInterval != 0 {
+		c.CleanupInterval = durationpb.New(time.Duration(features.ConnectOriginateOverrideCleanupInterval) * time.Second)
+	}
+
 	c.AltStatName = util.DelimitedStatsPrefix(ConnectOriginate)
 
 	return c

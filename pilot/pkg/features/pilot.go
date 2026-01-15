@@ -344,6 +344,12 @@ var (
 		60,
 		"The timeout (in seconds) for new connections to ztunnel. "+
 			"Default is 60s. ").Get()
+
+	ConnectOriginateOverrideCleanupInterval = env.Register(
+		"PILOT_CONNECT_ORIGINATE_OVERRIDE_CLEANUP_INTERVAL",
+		0,
+		"The interval (in seconds) to remove stale connections to ztunnel. "+
+			"Default is 0. When set to default, uses meshConfig value (default 10s).").Get()
 )
 
 // UnsafeFeaturesEnabled returns true if any unsafe features are enabled.
