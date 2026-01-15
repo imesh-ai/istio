@@ -320,6 +320,24 @@ var (
 			return NativeSidecarModeDisabled
 		}
 	}()
+
+	ConnectOriginateKeepaliveProbes = env.Register(
+		"PILOT_CONNECT_ORIGINATE_KEEPALIVE_PROBES",
+		0,
+		"Maximum number of keepalive probes sent to ztunnel before deciding the connection is dead. "+
+			"Default is 0 (disabled). Linux defaults to 9. ").Get()
+
+	ConnectOriginateKeepaliveTime = env.Register(
+		"PILOT_CONNECT_ORIGINATE_KEEPALIVE_TIME",
+		0,
+		"The idle time (in seconds) after which keepalive probes start being sent to ztunnel. "+
+			"Default is 0 (disabled). Linux defaults to 7200s (2 hours). ").Get()
+
+	ConnectOriginateKeepaliveInterval = env.Register(
+		"PILOT_CONNECT_ORIGINATE_KEEPALIVE_INTERVAL",
+		0,
+		"The number of seconds between keepalive probes sent to ztunnel. "+
+			"Default is 0 (disabled). Linux defaults to 75s. ").Get()
 )
 
 // UnsafeFeaturesEnabled returns true if any unsafe features are enabled.

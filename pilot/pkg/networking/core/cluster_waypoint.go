@@ -28,6 +28,7 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 	wrappers "google.golang.org/protobuf/types/known/wrapperspb"
 
 	meshconfig "istio.io/api/mesh/v1alpha1"
@@ -400,6 +401,18 @@ func (cb *ClusterBuilder) buildConnectOriginate(proxy *model.Proxy, push *model.
 				CommonTlsContext: ctx,
 			})},
 		},
+	}
+
+	if features.ConnectOriginateKeepaliveProbes != 0 ||
+		features.ConnectOriginateKeepaliveTime != 0 ||
+		features.ConnectOriginateKeepaliveInterval != 0 {
+		c.UpstreamConnectionOptions = &cluster.UpstreamConnectionOptions{
+			TcpKeepalive: &core.TcpKeepalive{
+				KeepaliveProbes:   &wrapperspb.UInt32Value{Value: uint32(features.ConnectOriginateKeepaliveProbes)},
+				KeepaliveTime:     &wrapperspb.UInt32Value{Value: uint32(features.ConnectOriginateKeepaliveTime)},
+				KeepaliveInterval: &wrapperspb.UInt32Value{Value: uint32(features.ConnectOriginateKeepaliveInterval)},
+			},
+		}
 	}
 
 	c.AltStatName = util.DelimitedStatsPrefix(ConnectOriginate)
