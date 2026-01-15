@@ -338,6 +338,12 @@ var (
 		0,
 		"The number of seconds between keepalive probes sent to ztunnel. "+
 			"Default is 0 (disabled). Linux defaults to 75s. ").Get()
+
+	ConnectOriginateOverrideConnectTimeout = env.Register(
+		"PILOT_CONNECT_ORIGINATE_OVERRIDE_CONNECT_TIMEOUT",
+		60,
+		"The timeout (in seconds) for new connections to ztunnel. "+
+			"Default is 60s. ").Get()
 )
 
 // UnsafeFeaturesEnabled returns true if any unsafe features are enabled.

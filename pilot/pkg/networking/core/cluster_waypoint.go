@@ -415,6 +415,10 @@ func (cb *ClusterBuilder) buildConnectOriginate(proxy *model.Proxy, push *model.
 		}
 	}
 
+	if features.ConnectOriginateOverrideConnectTimeout != 60 {
+		c.ConnectTimeout = durationpb.New(time.Duration(features.ConnectOriginateOverrideConnectTimeout) * time.Second)
+	}
+
 	c.AltStatName = util.DelimitedStatsPrefix(ConnectOriginate)
 
 	return c
