@@ -429,15 +429,25 @@ func (cb *ClusterBuilder) buildConnectOriginate(proxy *model.Proxy, push *model.
 }
 
 func h2connectUpgrade() map[string]*anypb.Any {
-	return map[string]*anypb.Any{
-		v3.HttpProtocolOptionsType: protoconv.MessageToAny(&http.HttpProtocolOptions{
-			UpstreamProtocolOptions: &http.HttpProtocolOptions_ExplicitHttpConfig_{ExplicitHttpConfig: &http.HttpProtocolOptions_ExplicitHttpConfig{
-				ProtocolConfig: &http.HttpProtocolOptions_ExplicitHttpConfig_Http2ProtocolOptions{
-					Http2ProtocolOptions: &core.Http2ProtocolOptions{
-						AllowConnect: true,
-					},
+	opts := &http.HttpProtocolOptions{
+		UpstreamProtocolOptions: &http.HttpProtocolOptions_ExplicitHttpConfig_{ExplicitHttpConfig: &http.HttpProtocolOptions_ExplicitHttpConfig{
+			ProtocolConfig: &http.HttpProtocolOptions_ExplicitHttpConfig_Http2ProtocolOptions{
+				Http2ProtocolOptions: &core.Http2ProtocolOptions{
+					AllowConnect: true,
 				},
-			}},
-		}),
+			},
+		}},
+	}
+
+	// Based on the original commit for https://github.com/istio/istio/pull/58389
+	// Only set idle timeout if explicitly configured (non-zero)
+	if features.ConnectOriginateIdleTimeout > 0 {
+		opts.CommonHttpProtocolOptions = &core.HttpProtocolOptions{
+			IdleTimeout: durationpb.New(features.ConnectOriginateIdleTimeout),
+		}
+	}
+
+	return map[string]*anypb.Any{
+		v3.HttpProtocolOptionsType: protoconv.MessageToAny(opts),
 	}
 }

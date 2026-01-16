@@ -350,6 +350,15 @@ var (
 		0,
 		"The interval (in seconds) to remove stale connections to ztunnel. "+
 			"Default is 0. When set to default, uses meshConfig value (default 10s).").Get()
+
+	// Based on the original commit for https://github.com/istio/istio/pull/58389
+	ConnectOriginateIdleTimeout = env.Register(
+		"PILOT_CONNECT_ORIGINATE_IDLE_TIMEOUT",
+		0*time.Second,
+		"Idle timeout for HBONE connections to ztunnel. "+
+			"Default is 0 (disabled), which uses Envoy's default 1-hour timeout. "+
+			"To prevent stale connection reuse on IP churn, set this to half or less of your IP cooldown period. "+
+			"Recommended: 15s for AWS VPC CNI (30s IP_COOLDOWN_PERIOD).").Get()
 )
 
 // UnsafeFeaturesEnabled returns true if any unsafe features are enabled.
