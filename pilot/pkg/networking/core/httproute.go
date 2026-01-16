@@ -119,9 +119,10 @@ func buildSidecarInboundHTTPRouteConfig(lb *ListenerBuilder, cc inboundChainConf
 	defaultRoute := istio_route.BuildDefaultHTTPInboundRoute(lb.node, cc.clusterName, traceOperation, cc.port.Protocol)
 
 	inboundVHost := &route.VirtualHost{
-		Name:    inboundVirtualHostPrefix + strconv.Itoa(cc.port.Port), // Format: "inbound|http|%d"
-		Domains: []string{"*"},
-		Routes:  []*route.Route{defaultRoute},
+		Name:                       inboundVirtualHostPrefix + strconv.Itoa(cc.port.Port), // Format: "inbound|http|%d"
+		Domains:                    []string{"*"},
+		Routes:                     []*route.Route{defaultRoute},
+		IncludeRequestAttemptCount: true,
 	}
 
 	r := &route.RouteConfiguration{
