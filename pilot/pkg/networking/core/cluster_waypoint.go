@@ -28,6 +28,7 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 	wrappers "google.golang.org/protobuf/types/known/wrapperspb"
 
 	meshconfig "istio.io/api/mesh/v1alpha1"
@@ -514,20 +515,50 @@ func (cb *ClusterBuilder) buildConnectOriginate(
 
 	c.AltStatName = util.DelimitedStatsPrefix(name)
 
+	if features.ConnectOriginateKeepaliveProbes != 0 ||
+		features.ConnectOriginateKeepaliveTime != 0 ||
+		features.ConnectOriginateKeepaliveInterval != 0 {
+		c.UpstreamConnectionOptions = &cluster.UpstreamConnectionOptions{
+			TcpKeepalive: &core.TcpKeepalive{
+				KeepaliveProbes:   &wrapperspb.UInt32Value{Value: uint32(features.ConnectOriginateKeepaliveProbes)},
+				KeepaliveTime:     &wrapperspb.UInt32Value{Value: uint32(features.ConnectOriginateKeepaliveTime)},
+				KeepaliveInterval: &wrapperspb.UInt32Value{Value: uint32(features.ConnectOriginateKeepaliveInterval)},
+			},
+		}
+	}
+
+	if features.ConnectOriginateOverrideConnectTimeout != 60 {
+		c.ConnectTimeout = durationpb.New(time.Duration(features.ConnectOriginateOverrideConnectTimeout) * time.Second)
+	}
+
+	if features.ConnectOriginateOverrideCleanupInterval != 0 {
+		c.CleanupInterval = durationpb.New(time.Duration(features.ConnectOriginateOverrideCleanupInterval) * time.Second)
+	}
+
 	return c
 }
 
 func h2connectUpgrade() map[string]*anypb.Any {
-	return map[string]*anypb.Any{
-		v3.HttpProtocolOptionsType: protoconv.MessageToAny(&http.HttpProtocolOptions{
-			UpstreamProtocolOptions: &http.HttpProtocolOptions_ExplicitHttpConfig_{ExplicitHttpConfig: &http.HttpProtocolOptions_ExplicitHttpConfig{
-				ProtocolConfig: &http.HttpProtocolOptions_ExplicitHttpConfig_Http2ProtocolOptions{
-					Http2ProtocolOptions: &core.Http2ProtocolOptions{
-						AllowConnect: true,
-					},
+	opts := &http.HttpProtocolOptions{
+		UpstreamProtocolOptions: &http.HttpProtocolOptions_ExplicitHttpConfig_{ExplicitHttpConfig: &http.HttpProtocolOptions_ExplicitHttpConfig{
+			ProtocolConfig: &http.HttpProtocolOptions_ExplicitHttpConfig_Http2ProtocolOptions{
+				Http2ProtocolOptions: &core.Http2ProtocolOptions{
+					AllowConnect: true,
 				},
-			}},
-		}),
+			},
+		}},
+	}
+
+	// Based on the original commit for https://github.com/istio/istio/pull/58389
+	// Only set idle timeout if explicitly configured (non-zero)
+	if features.ConnectOriginateIdleTimeout > 0 {
+		opts.CommonHttpProtocolOptions = &core.HttpProtocolOptions{
+			IdleTimeout: durationpb.New(features.ConnectOriginateIdleTimeout),
+		}
+	}
+
+	return map[string]*anypb.Any{
+		v3.HttpProtocolOptionsType: protoconv.MessageToAny(opts),
 	}
 }
 

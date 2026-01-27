@@ -323,6 +323,45 @@ var (
 
 	DisableShadowHostSuffix = env.Register("DISABLE_SHADOW_HOST_SUFFIX", true,
 		"If disabled, the shadow host suffix will be added to the hostnames of the mirrored requests.").Get()
+
+	ConnectOriginateKeepaliveProbes = env.Register(
+		"PILOT_CONNECT_ORIGINATE_KEEPALIVE_PROBES",
+		0,
+		"Maximum number of keepalive probes sent to ztunnel before deciding the connection is dead. "+
+			"Default is 0 (disabled). Linux defaults to 9. ").Get()
+
+	ConnectOriginateKeepaliveTime = env.Register(
+		"PILOT_CONNECT_ORIGINATE_KEEPALIVE_TIME",
+		0,
+		"The idle time (in seconds) after which keepalive probes start being sent to ztunnel. "+
+			"Default is 0 (disabled). Linux defaults to 7200s (2 hours). ").Get()
+
+	ConnectOriginateKeepaliveInterval = env.Register(
+		"PILOT_CONNECT_ORIGINATE_KEEPALIVE_INTERVAL",
+		0,
+		"The number of seconds between keepalive probes sent to ztunnel. "+
+			"Default is 0 (disabled). Linux defaults to 75s. ").Get()
+
+	ConnectOriginateOverrideConnectTimeout = env.Register(
+		"PILOT_CONNECT_ORIGINATE_OVERRIDE_CONNECT_TIMEOUT",
+		60,
+		"The timeout (in seconds) for new connections to ztunnel. "+
+			"Default is 60s. ").Get()
+
+	ConnectOriginateOverrideCleanupInterval = env.Register(
+		"PILOT_CONNECT_ORIGINATE_OVERRIDE_CLEANUP_INTERVAL",
+		0,
+		"The interval (in seconds) to remove stale connections to ztunnel. "+
+			"Default is 0. When set to default, uses meshConfig value (default 10s).").Get()
+
+	// Based on the original commit for https://github.com/istio/istio/pull/58389
+	ConnectOriginateIdleTimeout = env.Register(
+		"PILOT_CONNECT_ORIGINATE_IDLE_TIMEOUT",
+		0*time.Second,
+		"Idle timeout for HBONE connections to ztunnel. "+
+			"Default is 0 (disabled), which uses Envoy's default 1-hour timeout. "+
+			"To prevent stale connection reuse on IP churn, set this to half or less of your IP cooldown period. "+
+			"Recommended: 15s for AWS VPC CNI (30s IP_COOLDOWN_PERIOD).").Get()
 )
 
 // UnsafeFeaturesEnabled returns true if any unsafe features are enabled.
